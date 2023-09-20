@@ -59,40 +59,53 @@ export default {
       callStack: [],
       vacant: true,
       current: 1,
+      currentActive: 1,
     }
   },
   methods: {
     callLift(id, target) {
-      target.style.background = 'yellow';
-      if (!this.callStack.includes(id)) {
-        this.callStack.push(id)
+      if (this.currentActive !== id) {
+        target.style.background = 'yellow';
+        if (!this.callStack.includes(id)) {
+          this.callStack.push(id)
+        }
+        if (this.vacant) {
+          this.launchLift(this.callStack[0], target);
+        }
       }
-      if (this.vacant) {
-        this.launchLift(this.callStack[0], target);
-      }
+      console.log('callStack', this.callStack)
     },
     launchLift(id, button) {
       const self = this;
+      this.currentActive = id;
       this.vacant = false;
       let delta = Math.abs(id - this.current);
-      console.log(Math.abs(parseFloat(this.$refs.lift.style.bottom) - id * 100))
-      new Promise(function () {
+      // let animationTime = Math.abs(parseFloat(this.$refs.lift.style.bottom) - id * 100);
+      let interval = setInterval(function () {
+        if (self.current > id) {
+          self.$refs.lift.style.bottom = `${parseFloat(self.$refs.lift.style.bottom) - 1}px`;
+        } else {
+          self.$refs.lift.style.bottom = `${parseFloat(self.$refs.lift.style.bottom) + 1}px`;
+        }
+        if (self.$refs.lift.style.bottom === `${id * 100}px`) {
+          clearInterval(interval)
+        }
+      }, 10);
+      setTimeout(function () {
         setTimeout(function () {
-          setTimeout(function () {
-            self.$refs.lift.style.bottom = `${id * 100}px`;
-            self.vacant = true;
-            button.style.background = 'white';
-            self.callStack.shift(self.callStack[0]);
-            self.current = id;
-            self.check();
-          }, 3000)
-        }, delta * 1000)
-      })
+          // self.$refs.lift.style.bottom = `${id * 100}px`;
+          self.vacant = true;
+          button.style.background = 'white';
+          self.callStack.shift(self.callStack[0]);
+          self.check();
+        }, 3000)
+        self.current = id;
+      }, delta * 1000)
     },
     check() {
       const buttons = document.querySelectorAll('.stages__stage-button');
-      if(this.callStack.length > 0) {
-        this.callLift(this.callStack[0], buttons[this.callStack[0] -1]);
+      if (this.callStack.length > 0) {
+        this.callLift(this.callStack[0], buttons[this.callStack[0] - 1]);
       }
     }
   }
