@@ -122,17 +122,17 @@ export default {
       let intervalFlashing = setInterval(function () {
         button.classList.toggle('blue');
         counter += 0.5;
-        if(counter >= 3) {
+        if (counter >= 3) {
           clearInterval(intervalFlashing);
           button.classList.remove('blue');
         }
       }, 500)
     },
     checkSessionState() {
-      if(localStorage.getItem('current')) {
+      if (localStorage.getItem('current')) {
         this.current = localStorage.getItem('current');
       }
-      if(localStorage.getItem('currentActive')) {
+      if (localStorage.getItem('currentActive')) {
         this.currentActive = localStorage.getItem('currentActive');
       }
     }
@@ -211,14 +211,16 @@ button {
 
   &__direction {
     height: 30px;
-    width: 15px;
+    width: 30px;
+    border-top: 2px solid #6E18C0;
+    border-right: 2px solid #6E18C0;
 
     &.down {
-      background: url("~@/assets/icon_arrow_down.svg") center / contain no-repeat;
+      transform: rotate(135deg);
     }
 
     &.up {
-      background: url("~@/assets/icon_arrow_up.svg") center / contain no-repeat;
+      transform: rotate(-45deg);
     }
   }
 
