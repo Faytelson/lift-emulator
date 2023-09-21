@@ -20,7 +20,18 @@
         <div
             class="lift-track__lift"
             ref="lift"
-        ></div>
+        >
+          <div
+              class="table"
+          >
+            <div
+                v-show="tableClass"
+                class="table__direction"
+                :class="tableClass"
+            ></div>
+            <div class="table__stage">{{ currentActive }}</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -32,34 +43,24 @@ export default {
   name: 'App',
   components: {},
   mounted() {
+    this.checkSessionState();
     this.$refs.lift.style.bottom = `${this.current * 100}px`;
   },
   data() {
     return {
       stages: [
-        {
-          id: 0
-        },
-        {
-          id: 1
-        },
-        {
-          id: 2
-        },
-        {
-          id: 3
-        },
-        {
-          id: 4
-        },
-        {
-          id: 5
-        }
+        {id: 0},
+        {id: 1},
+        {id: 2},
+        {id: 3},
+        {id: 4},
+        {id: 5}
       ],
       callStack: [],
       vacant: true,
       current: 1,
       currentActive: 1,
+      tableClass: ''
     }
   },
   methods: {
@@ -73,39 +74,66 @@ export default {
           this.launchLift(this.callStack[0], target);
         }
       }
-      console.log('callStack', this.callStack)
     },
     launchLift(id, button) {
       const self = this;
       this.currentActive = id;
+      localStorage.setItem('currentActive', self.currentActive);
       this.vacant = false;
       let delta = Math.abs(id - this.current);
-      // let animationTime = Math.abs(parseFloat(this.$refs.lift.style.bottom) - id * 100);
+      // setting lift's position
       let interval = setInterval(function () {
         if (self.current > id) {
+          self.tableClass = 'down';
           self.$refs.lift.style.bottom = `${parseFloat(self.$refs.lift.style.bottom) - 1}px`;
+          if (self.$refs.lift.style.bottom <= `${id * 100}px`) {
+            clearInterval(interval)
+          }
         } else {
+          self.tableClass = 'up';
           self.$refs.lift.style.bottom = `${parseFloat(self.$refs.lift.style.bottom) + 1}px`;
-        }
-        if (self.$refs.lift.style.bottom === `${id * 100}px`) {
-          clearInterval(interval)
+          if (self.$refs.lift.style.bottom >= `${id * 100}px`) {
+            clearInterval(interval)
+          }
         }
       }, 10);
+      //set timer depending on animation time
       setTimeout(function () {
         setTimeout(function () {
-          // self.$refs.lift.style.bottom = `${id * 100}px`;
           self.vacant = true;
           button.style.background = 'white';
           self.callStack.shift(self.callStack[0]);
-          self.check();
+          self.checkStack();
         }, 3000)
         self.current = id;
+        localStorage.setItem('current', self.current);
+        self.tableClass = '';
+        self.animate(button);
       }, delta * 1000)
     },
-    check() {
+    checkStack() {
       const buttons = document.querySelectorAll('.stages__stage-button');
       if (this.callStack.length > 0) {
         this.callLift(this.callStack[0], buttons[this.callStack[0] - 1]);
+      }
+    },
+    animate(button) {
+      let counter = 0;
+      let intervalFlashing = setInterval(function () {
+        button.classList.toggle('blue');
+        counter += 0.5;
+        if(counter >= 3) {
+          clearInterval(intervalFlashing);
+          button.classList.remove('blue');
+        }
+      }, 500)
+    },
+    checkSessionState() {
+      if(localStorage.getItem('current')) {
+        this.current = localStorage.getItem('current');
+      }
+      if(localStorage.getItem('currentActive')) {
+        this.currentActive = localStorage.getItem('currentActive');
       }
     }
   }
@@ -173,5 +201,33 @@ button {
     position: absolute;
     bottom: 100px;
   }
+}
+
+.table {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 10px;
+
+  &__direction {
+    height: 30px;
+    width: 15px;
+
+    &.down {
+      background: url("~@/assets/icon_arrow_down.svg") center / contain no-repeat;
+    }
+
+    &.up {
+      background: url("~@/assets/icon_arrow_up.svg") center / contain no-repeat;
+    }
+  }
+
+  &__stage {
+    font-size: 20px;
+  }
+}
+
+.blue {
+  background-color: #DAF0FF !important;
 }
 </style>
