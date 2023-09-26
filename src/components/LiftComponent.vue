@@ -2,9 +2,9 @@
   <div class="container">
     <div class="stages">
       <div
-          class="stages__stage"
           v-for="stage in stages"
           :key="stage.id"
+          class="stages__stage"
       >{{ stage.id }}
       </div>
     </div>
@@ -34,14 +34,16 @@ export default {
   props: {
     stages: {
       type: Array,
+      default: null,
     },
-    num: {
-      type: Number,
+    active: {
+      type: Boolean,
+      default: false
     },
-    localObj: Object,
+    currentBtn: null
   },
   mounted() {
-    this.checkSessionState();
+    // this.checkSessionState();
     this.lift.style.bottom = `${this.current * 100}px`;
   },
   data() {
@@ -53,30 +55,35 @@ export default {
       tableClass: '',
     }
   },
+  watch: {
+    active(state) {
+      if(state) {
+        this.callLift(this.currentBtn);
+      }
+    }
+  },
   computed: {
     lift() {
       return this.$refs.lift
     },
-    localObjCopy() {
-      return this.localObj
-    }
   },
   methods: {
-    callLift(id, target) {
-      if (this.currentActive !== id) {
-        target.style.background = 'yellow';
-        if (!this.callStack.includes(id)) {
-          this.callStack.push(id)
+    callLift(button) {
+      console.log('button.id: ', button.id)
+      if (this.currentActive !== button.id) {
+        button.target.style.background = 'yellow';
+        if (!this.callStack.includes(button.id)) {
+          this.callStack.push(button.id)
         }
         if (this.vacant) {
-          this.launchLift(this.callStack[0], target);
+          this.launchLift(this.callStack[0], button.target);
         }
       }
     },
     launchLift(id, button) {
       const self = this;
       this.currentActive = id;
-      localStorage.setItem(`currentActive${this.num}`, self.currentActive);
+      // localStorage.setItem(`currentActive${this.num}`, self.currentActive);
       this.vacant = false;
       let delta = Math.abs(id - this.current);
       // setting lift's position
@@ -126,14 +133,14 @@ export default {
         }
       }, 500)
     },
-    checkSessionState() {
-      if (localStorage.getItem('current')) {
-        this.current = localStorage.getItem('current');
-      }
-      if (localStorage.getItem('currentActive')) {
-        this.currentActive = localStorage.getItem('currentActive');
-      }
-    }
+    // checkSessionState() {
+    //   if (localStorage.getItem('current')) {
+    //     this.current = localStorage.getItem('current');
+    //   }
+    //   if (localStorage.getItem('currentActive')) {
+    //     this.currentActive = localStorage.getItem('currentActive');
+    //   }
+    // }
   }
 }
 </script>

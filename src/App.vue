@@ -2,12 +2,11 @@
   <div id="app">
     <div class="container-xl">
       <LiftComponent
-          :stages="stages"
-          :localObj="localObj"
           v-for="lift in lifts"
-          :key=lift.id
-          :num="lift.id"
-          :ref='`lift${lift.id}`'
+          :stages="stages"
+          :key="lift.id"
+          :active="lift.id === active"
+          :currentBtn="currentBtn"
       ></LiftComponent>
       <div class="buttons">
         <div
@@ -17,7 +16,7 @@
         >
           <button
               class="buttons__button"
-              @click="checkLifts"
+              @click="checkActive(button.id, $event.target)"
           >Call lift
           </button>
         </div>
@@ -34,9 +33,6 @@ export default {
   components: {
     LiftComponent
   },
-  mounted() {
-    this.setLocalObject();
-  },
   data() {
     return {
       stages: [
@@ -48,21 +44,28 @@ export default {
         {id: 5}
       ],
       lifts: [{id: 1}, {id: 2}, {id: 3}],
-      localObj: {}
-    }
-  },
-  computed: {
-    getLocalObj() {
-      return JSON.stringify(this.localObj)
+      active: null,
+      currentValues: [],
+      currentBtn: null,
     }
   },
   methods: {
-    checkLifts() {
-
+    checkActive(buttonId, button) {
+      let liftsArr = JSON.parse(localStorage.getItem('localArr'));
+      if(liftsArr) {
+        liftsArr.forEach(lift => {
+          this.currentValues.push(Math.abs(buttonId - lift.current));
+          this.active = Math.min(...this.currentValues);
+        })
+      } else {
+        this.active = 1;
+      }
+      this.currentBtn = {
+        target: button,
+        id: buttonId,
+      };
+      console.log('active lift id is: ', this.active)
     },
-    setLocalObject() {
-      localStorage.setItem('localObj', this.getLocalObj);
-    }
   }
 }
 </script>
