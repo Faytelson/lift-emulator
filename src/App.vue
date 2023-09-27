@@ -5,7 +5,6 @@
           v-for="lift in lifts"
           :stages="stages"
           :key="lift.id"
-          :currentBtn="currentBtn"
           :ref="lift.id"
           @createLocal="createLocalObj"
           @sendClearCallstack="clearCallStackItem"
@@ -37,7 +36,8 @@ export default {
     LiftComponent
   },
   mounted() {
-    this.createLocalObj()
+    this.checkSessionState();
+    this.createLocalObj();
   },
   data() {
     return {
@@ -50,7 +50,6 @@ export default {
         {id: 5}
       ],
       lifts: [{id: 1}, {id: 2}, {id: 3}],
-      currentBtn: null,
       callStack: [],
     }
   },
@@ -60,11 +59,9 @@ export default {
         this.callStack.push(buttonId)
       }
       let liftsArr = JSON.parse(localStorage.getItem('localArr'));
-      console.log('liftsArr', liftsArr)
       if(liftsArr) {
         let currentValues = [];
         let filtered = liftsArr.filter(lift => ((buttonId !== lift.currentActive) && lift.vacant));
-        console.log('filtered', filtered)
         if(filtered.length > 0) {
           filtered.forEach(lift => currentValues.push(Math.abs(buttonId - lift.current)));
           let active = Math.min(...currentValues);
@@ -77,13 +74,9 @@ export default {
           }
         }
       }
-      this.currentBtn = {
-        target: button,
-        id: buttonId,
-      };
     },
     createLocalObj() {
-      // let liftsArr = JSON.parse(localStorage.getItem('localArr'));
+            // let liftsArr = JSON.parse(localStorage.getItem('localArr'));
         let liftsArr = [];
         let lifts = this.$refs;
         for(let key in lifts) {
@@ -105,6 +98,18 @@ export default {
     },
     clearCallStackItem() {
       this.callStack.shift(this.callStack[0]);
+    },
+    checkSessionState() {
+      let liftsArr = JSON.parse(localStorage.getItem('localArr'));
+      let lifts = this.$refs;
+      let liftNodes = document.querySelectorAll('.lift-track__lift');
+      for(let key in lifts) {
+        lifts[key][0].current = liftsArr[key - 1].current;
+        lifts[key][0].currentActive = liftsArr[key - 1].currentActive;
+
+        liftNodes[key - 1].style.bottom = `${lifts[key][0].current * 100}px`;
+
+        }
     }
   }
 }

@@ -36,11 +36,10 @@ export default {
       type: Array,
       default: null,
     },
-    currentBtn: null
   },
   mounted() {
-    // this.checkSessionState();
-    this.lift.style.bottom = `${this.current * 100}px`;
+    let lift = document.querySelector('.lift-track__lift');
+    lift.style.bottom = `${this.current * 100}px`;
   },
   data() {
     return {
@@ -58,6 +57,7 @@ export default {
   methods: {
     launchLift(id, button) {
       button.style.background = 'yellow';
+      this.$emit('sendClearCallstack');
       const self = this;
       this.currentActive = id;
       this.vacant = false;
@@ -85,7 +85,6 @@ export default {
           self.vacant = true;
           self.$emit('createLocal');
           button.style.background = 'white';
-          self.$emit('sendClearCallstack');
           self.$emit('sendCheckStack');
         }, 3000)
         self.current = id;
@@ -105,14 +104,6 @@ export default {
         }
       }, 500)
     },
-    // checkSessionState() {
-    //   if (localStorage.getItem('current')) {
-    //     this.current = localStorage.getItem('current');
-    //   }
-    //   if (localStorage.getItem('currentActive')) {
-    //     this.currentActive = localStorage.getItem('currentActive');
-    //   }
-    // }
   }
 }
 </script>
