@@ -36,10 +36,6 @@ export default {
       type: Array,
       default: null,
     },
-    active: {
-      type: Boolean,
-      default: false
-    },
     currentBtn: null
   },
   mounted() {
@@ -48,43 +44,24 @@ export default {
   },
   data() {
     return {
-      callStack: [],
       vacant: true,
       current: 1,
       currentActive: 1,
       tableClass: '',
     }
   },
-  watch: {
-    active(state) {
-      if(state) {
-        this.callLift(this.currentBtn);
-      }
-    }
-  },
   computed: {
     lift() {
-      return this.$refs.lift
+      return this.$refs.lift;
     },
   },
   methods: {
-    callLift(button) {
-      console.log('button.id: ', button.id)
-      if (this.currentActive !== button.id) {
-        button.target.style.background = 'yellow';
-        if (!this.callStack.includes(button.id)) {
-          this.callStack.push(button.id)
-        }
-        if (this.vacant) {
-          this.launchLift(this.callStack[0], button.target);
-        }
-      }
-    },
     launchLift(id, button) {
+      button.style.background = 'yellow';
       const self = this;
       this.currentActive = id;
-      // localStorage.setItem(`currentActive${this.num}`, self.currentActive);
       this.vacant = false;
+      self.$emit('createLocal');
       let delta = Math.abs(id - this.current);
       // setting lift's position
       let interval = setInterval(function () {
@@ -106,21 +83,16 @@ export default {
       setTimeout(function () {
         setTimeout(function () {
           self.vacant = true;
+          self.$emit('createLocal');
           button.style.background = 'white';
-          self.callStack.shift(self.callStack[0]);
-          self.checkStack();
+          self.$emit('sendClearCallstack');
+          self.$emit('sendCheckStack');
         }, 3000)
         self.current = id;
-        localStorage.setItem('current', self.current);
+        self.$emit('createLocal');
         self.tableClass = '';
         self.animate(button);
       }, delta * 1000)
-    },
-    checkStack() {
-      const buttons = document.querySelectorAll('.stages__stage-button');
-      if (this.callStack.length > 0) {
-        this.callLift(this.callStack[0], buttons[this.callStack[0] - 1]);
-      }
     },
     animate(button) {
       let counter = 0;
@@ -208,9 +180,5 @@ export default {
   &__stage {
     font-size: 20px;
   }
-}
-
-.blue {
-  background-color: #DAF0FF !important;
 }
 </style>

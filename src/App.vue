@@ -5,8 +5,11 @@
           v-for="lift in lifts"
           :stages="stages"
           :key="lift.id"
-          :active="lift.id === active"
           :currentBtn="currentBtn"
+          :ref="lift.id"
+          @createLocal="createLocalObj"
+          @sendClearCallstack="clearCallStackItem"
+          @sendCheckStack="checkStack"
       ></LiftComponent>
       <div class="buttons">
         <div
@@ -33,6 +36,9 @@ export default {
   components: {
     LiftComponent
   },
+  mounted() {
+    this.createLocalObj()
+  },
   data() {
     return {
       stages: [
@@ -44,28 +50,62 @@ export default {
         {id: 5}
       ],
       lifts: [{id: 1}, {id: 2}, {id: 3}],
-      active: null,
-      currentValues: [],
       currentBtn: null,
+      callStack: [],
     }
   },
   methods: {
     checkActive(buttonId, button) {
+      if (!this.callStack.includes(buttonId)) {
+        this.callStack.push(buttonId)
+      }
       let liftsArr = JSON.parse(localStorage.getItem('localArr'));
+      console.log('liftsArr', liftsArr)
       if(liftsArr) {
-        liftsArr.forEach(lift => {
-          this.currentValues.push(Math.abs(buttonId - lift.current));
-          this.active = Math.min(...this.currentValues);
-        })
-      } else {
-        this.active = 1;
+        let currentValues = [];
+        let filtered = liftsArr.filter(lift => ((buttonId !== lift.currentActive) && lift.vacant));
+        console.log('filtered', filtered)
+        if(filtered.length > 0) {
+          filtered.forEach(lift => currentValues.push(Math.abs(buttonId - lift.current)));
+          let active = Math.min(...currentValues);
+          let filteredActive = filtered.find(lift => Math.abs(buttonId - lift.current) === active);
+          let lifts = this.$refs;
+          for(let key in lifts) {
+            if(Number(key) === Number(filteredActive.id)) {
+              lifts[key][0].launchLift(buttonId, button);
+            }
+          }
+        }
       }
       this.currentBtn = {
         target: button,
         id: buttonId,
       };
-      console.log('active lift id is: ', this.active)
     },
+    createLocalObj() {
+      // let liftsArr = JSON.parse(localStorage.getItem('localArr'));
+        let liftsArr = [];
+        let lifts = this.$refs;
+        for(let key in lifts) {
+          let liftObj = {
+            id: Number(key),
+            current: lifts[key][0].current,
+            currentActive: lifts[key][0].currentActive,
+            vacant: lifts[key][0].vacant,
+          }
+          liftsArr.push(liftObj)
+        }
+        localStorage.setItem('localArr', JSON.stringify(liftsArr))
+    },
+    checkStack() {
+      const buttons = document.querySelectorAll('.buttons__button');
+      if (this.callStack.length > 0) {
+        this.checkActive(this.callStack[0], buttons[this.callStack[0]]);
+      }
+    },
+    clearCallStackItem() {
+      this.callStack.shift(this.callStack[0]);
+    }
   }
 }
 </script>
@@ -116,6 +156,10 @@ button {
     border-radius: 50%;
     cursor: pointer;
     border: 1px solid #000;
+  }
+
+  .blue {
+    background-color: #DAF0FF !important;
   }
 }
 </style>
