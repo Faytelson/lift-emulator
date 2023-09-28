@@ -79,7 +79,7 @@ export default {
         }
         liftsArr.push(liftObj)
       }
-      localStorage.setItem('localArr', JSON.stringify(liftsArr))
+      localStorage.setItem('localArr', JSON.stringify(liftsArr));
     },
     checkActive(buttonId, button) {
       if (!this.callStack.includes(buttonId)) {
@@ -94,11 +94,7 @@ export default {
           let active = Math.min(...currentValues);
           let filteredActive = filtered.find(lift => Math.abs(buttonId - lift.current) === active);
           let lifts = this.$refs;
-          for(let key in lifts) {
-            if(Number(key) === Number(filteredActive.id)) {
-              lifts[key][0].launchLift(buttonId, button);
-            }
-          }
+          lifts[filteredActive.id][0].launchLift(buttonId, button);
         }
       }
     },

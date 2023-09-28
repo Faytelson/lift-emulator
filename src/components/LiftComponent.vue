@@ -38,8 +38,10 @@ export default {
     },
   },
   mounted() {
-    let lift = document.querySelector('.lift-track__lift');
-    lift.style.bottom = `${this.current * 100}px`;
+    let lifts = document.querySelectorAll('.lift-track__lift');
+    lifts.forEach(lift => {
+      lift.style.bottom = `${this.current * 100}px`;
+    })
   },
   data() {
     return {
@@ -58,12 +60,12 @@ export default {
     launchLift(id, button) {
       button.style.background = 'yellow';
       this.$emit('sendClearCallstack');
-      const self = this;
       this.currentActive = id;
       this.vacant = false;
-      self.$emit('createLocal');
+      this.$emit('createLocal');
       let delta = Math.abs(id - this.current);
       // setting lift's position
+      const self = this;
       let interval = setInterval(function () {
         if (self.current > id) {
           self.tableClass = 'down';
