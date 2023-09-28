@@ -37,7 +37,6 @@ export default {
   },
   mounted() {
     this.checkSessionState();
-    this.createLocalObj();
   },
   data() {
     return {
@@ -54,6 +53,34 @@ export default {
     }
   },
   methods: {
+    checkSessionState() {
+      let liftsArr = JSON.parse(localStorage.getItem('localArr'));
+      if(liftsArr) {
+        let lifts = this.$refs;
+        let liftNodes = document.querySelectorAll('.lift-track__lift');
+        for(let key in lifts) {
+          lifts[key][0].current = liftsArr[key - 1].current;
+          lifts[key][0].currentActive = liftsArr[key - 1].currentActive;
+          liftNodes[key - 1].style.bottom = `${lifts[key][0].current * 100}px`;
+        }
+      } else {
+        this.createLocalObj();
+      }
+    },
+    createLocalObj() {
+      let liftsArr = [];
+      let lifts = this.$refs;
+      for(let key in lifts) {
+        let liftObj = {
+          id: Number(key),
+          current: lifts[key][0].current,
+          currentActive: lifts[key][0].currentActive,
+          vacant: lifts[key][0].vacant,
+        }
+        liftsArr.push(liftObj)
+      }
+      localStorage.setItem('localArr', JSON.stringify(liftsArr))
+    },
     checkActive(buttonId, button) {
       if (!this.callStack.includes(buttonId)) {
         this.callStack.push(buttonId)
@@ -75,21 +102,6 @@ export default {
         }
       }
     },
-    createLocalObj() {
-            // let liftsArr = JSON.parse(localStorage.getItem('localArr'));
-        let liftsArr = [];
-        let lifts = this.$refs;
-        for(let key in lifts) {
-          let liftObj = {
-            id: Number(key),
-            current: lifts[key][0].current,
-            currentActive: lifts[key][0].currentActive,
-            vacant: lifts[key][0].vacant,
-          }
-          liftsArr.push(liftObj)
-        }
-        localStorage.setItem('localArr', JSON.stringify(liftsArr))
-    },
     checkStack() {
       const buttons = document.querySelectorAll('.buttons__button');
       if (this.callStack.length > 0) {
@@ -99,18 +111,6 @@ export default {
     clearCallStackItem() {
       this.callStack.shift(this.callStack[0]);
     },
-    checkSessionState() {
-      let liftsArr = JSON.parse(localStorage.getItem('localArr'));
-      let lifts = this.$refs;
-      let liftNodes = document.querySelectorAll('.lift-track__lift');
-      for(let key in lifts) {
-        lifts[key][0].current = liftsArr[key - 1].current;
-        lifts[key][0].currentActive = liftsArr[key - 1].currentActive;
-
-        liftNodes[key - 1].style.bottom = `${lifts[key][0].current * 100}px`;
-
-        }
-    }
   }
 }
 </script>
